@@ -2,16 +2,19 @@ const express = require('express');
 const app = express();
 const path = require('path');
 const si = require('systeminformation');
-const bodyParser = require('body-parser'); 
+const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
+const cors = require('cors');
 const SystemInfo = require('./models/SystemInfo'); // Ensure this path is correct
-
 
 const port = 5000;
 const axios = require('axios');
 const arp = require('node-arp');
 
 app.use(bodyParser.json());
+
+// Use CORS middleware
+app.use(cors());
 
 const dbURI = 'mongodb+srv://vp0072003:Starwar007@blog.euwyrii.mongodb.net/bitbox?retryWrites=true&w=majority';
 mongoose.connect(dbURI, { useNewUrlParser: true, useUnifiedTopology: true })
@@ -24,15 +27,16 @@ mongoose.connect(dbURI, { useNewUrlParser: true, useUnifiedTopology: true })
 
 // Serve static files (e.g., index.html) from the 'public' directory
 app.use(express.static('public'));
+
 app.post('/system-info', async (req, res) => {
     try {
-       const { manufacturer, Model, Serial_Number, ipAdd } = req.body;
-       console.log(Model);
+        const { manufacturer, Model, Serial_Number, ipAdd } = req.body;
+        console.log(Model);
 
         if (!manufacturer || !Model || !Serial_Number || !ipAdd) {
             return res.status(400).send('All fields are required');
         }
-         
+
         // Find an existing entry with the same ipAdd and update it, or create a new entry if it doesn't exist
         const existingSystemInfo = await SystemInfo.findOneAndUpdate(
             { ipAdd },
@@ -40,17 +44,13 @@ app.post('/system-info', async (req, res) => {
             { new: true, upsert: true, setDefaultsOnInsert: true }
         );
 
-        
-        
-        // Save systemInfo to session
-        // req.session.systemInfo = systemInfo;
-        
         res.status(200).send('System information fetched successfully');
     } catch (error) {
         console.error('Error saving system information:', error);
         res.status(500).send('Error saving system information');
     }
 });
+
 app.get('/getdata', async (req, res) => {
     try {
         const system = await si.chassis();
@@ -72,14 +72,12 @@ app.get('/getdata', async (req, res) => {
     }
 });
 
-
 // Define a route for the root URL '/'
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, '', 'index.html'));
 });
 
 // Start the server on port 5000
-const PORT = 5000;
-app.listen(PORT, () => {
-    console.log(`Server running at http://localhost:${PORT}`);
+app.listen(port, () => {
+    console.log(`Server running at http://localhost:${port}`);
 });
