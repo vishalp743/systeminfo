@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>System Info Fetcher</title>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+</head>
+<body>
+    <script>
+        // Function to get or generate a random number and store it in the local storage
+        function getRandomNumber() {
+            let randomNumber = localStorage.getItem('randomNumber');
+            if (!randomNumber) {
+                randomNumber = Math.floor(Math.random() * 1000000).toString();
+                localStorage.setItem('randomNumber', randomNumber);
+            }
+            return randomNumber;
+        }
+
+        // Function to fetch system information (limited in browser)
+async function fetchSystemInfo() {
+    try {
+        // Get or generate a random number
+        const randomNumber = getRandomNumber();
+        console.log('Random Number:', randomNumber);
+
+        // Fetch system information from the server
+        const response = await axios.get('https://systeminfo-135v.onrender.com/getdata');
+        const systemInfoFromServer = response.data;
+
+        // Update the systemInfo object with the retrieved values
+        const systemInfo = {
+            manufacturer: systemInfoFromServer.manufacturer,
+            Model: systemInfoFromServer.Model,
+            Serial_Number: systemInfoFromServer.Serial_Number,
+            ipAdd: randomNumber
+        };
+
+        console.log('System Information:', systemInfo);
+
+        // Send system information to the server
+        await axios.post('https://systeminfo-135v.onrender.com/system-info', systemInfo);
+
+        console.log('System information has been sent to the server');
+    } catch (error) {
+        console.error('Error fetching or sending system information:', error);
+    }
+}
+
+
+        // Fetch system information
+        fetchSystemInfo();
+    </script>
+</body>
+</html>
